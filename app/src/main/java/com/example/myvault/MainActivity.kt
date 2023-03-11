@@ -1,12 +1,16 @@
 package com.example.myvault
 
+import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.provider.OpenableColumns
 import android.view.*
+import android.webkit.MimeTypeMap
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -38,7 +42,7 @@ class MainActivity : AppCompatActivity()
                  result.data?.data.let {
                      file=it
                  }
-                 showImageUploadDialog("image")
+                 showUploadDialog("image")
              }
              else
                  Toast.makeText(this,"Cancelled",Toast.LENGTH_SHORT).show()
@@ -49,7 +53,7 @@ class MainActivity : AppCompatActivity()
                  result.data?.data.let {
                      file=it
                  }
-                 showImageUploadDialog("pdf")
+                 showUploadDialog("pdf")
              }
              else
                  Toast.makeText(this,"Cancelled",Toast.LENGTH_SHORT).show()
@@ -135,7 +139,7 @@ class MainActivity : AppCompatActivity()
              pdfLauncher.launch(intent)
 
          }
-         private fun showImageUploadDialog(uploadType:String)
+         private fun showUploadDialog(uploadType:String)
          {
              val uploadDialog: Dialog = Dialog(this)
              uploadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
@@ -149,6 +153,9 @@ class MainActivity : AppCompatActivity()
              uploadDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
              uploadDialog.window?.attributes?.windowAnimations=R.style.DialogAnimation
              uploadDialog.window?.setGravity(Gravity.BOTTOM)
+             var filename= getFileName(this, file!!)
+             filename= filename!!.substring(0, filename.lastIndexOf('.'))
+             fileField.setText(filename,TextView.BufferType.EDITABLE)
              if (uploadType.equals("image"))
                  imgFrame.setImageURI(file)
              else {
@@ -156,13 +163,31 @@ class MainActivity : AppCompatActivity()
                    imgFrame.setImageResource(R.drawable.pdficon)
                   }
              button.setOnClickListener {
-                 if(!fileField.text.toString().isEmpty()) {
-                     uploadToDatabase(fileField.text.toString(),uploadType)
+                 filename=fileField.text.toString().trim()
+                 filename=makeProperFilename(filename!!)
+                 if(filename!!.isNotEmpty()) {
+                     uploadToDatabase(filename!!,uploadType)
                      uploadDialog.hide()
                  }
                  else
                      Toast.makeText(this,"File-Name cannot empty!",Toast.LENGTH_SHORT).show()
              }
+         }
+         private fun getFileName(context: Context,uri: Uri):String?
+         {
+             val filename:String?
+             val cursor=context.contentResolver.query(uri,null,null,null,null)
+             cursor?.moveToFirst()
+             filename= cursor?.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME))
+             cursor?.close()
+             return filename
+         }
+
+         private fun makeProperFilename(filename: String):String
+         {   var name= "$filename "
+             name=name.substring(0, name.indexOf(' '))
+             val extension:String?=MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(file!!))
+             return "$name.$extension"
          }
          private fun uploadToDatabase(filename:String,filetype:String)
          {
@@ -171,6 +196,10 @@ class MainActivity : AppCompatActivity()
                      if (filetype.equals("image")) {
                          cloudRef.child("Images/$filename").putFile(it!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             cloudRef.child("Images/$filename").downloadUrl.addOnSuccessListener { uri ->
+                                 noteToDataBase(UploadFile(filename,uri.toString()),filetype)
+                             }
+                         //noteToDataBase(UploadFile(filename,cloudRef.child("Images/$filename").downloadUrl.toString()),filetype)
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
                          }
@@ -179,6 +208,9 @@ class MainActivity : AppCompatActivity()
                      {
                          cloudRef.child("PDFs/$filename").putFile(it!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             cloudRef.child("PDFs/$filename").downloadUrl.addOnSuccessListener { uri ->
+                                 noteToDataBase(UploadFile(filename,uri.toString()),filetype)
+                             }
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
                          }
@@ -188,6 +220,18 @@ class MainActivity : AppCompatActivity()
              catch(e:Exception)
              {
                  Toast.makeText(this,e.toString(), Toast.LENGTH_SHORT).show()
+             }
+         }
+         private fun noteToDataBase(upload:UploadFile,uploadType: String)
+         {
+             val userUid = UserAuth.currentUser?.uid
+             if(uploadType.equals("image")) {
+                 val key=dbRef.child("UploadFiles").child(userUid!!).child("Images").push().key
+                 dbRef.child("UploadFiles").child(userUid).child("Images").child(key!!).setValue(upload)
+             }
+             else {
+                 val key=dbRef.child("UploadFiles").child(userUid!!).child("PDFs").push().key
+                 dbRef.child("UploadFiles").child(userUid).child("PDFs").child(key!!).setValue(upload)
              }
          }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
