@@ -1,3 +1,9 @@
 <resources>
     <string name="app_name">My Vault</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="pdf_fragment">PDF FRAGMENT</string>
+    <string name="tablayout">tablayout</string>
+    <string name="choose_upload_type">Choose Upload Type</string>
+    <string name="upload_image">Upload Image</string>
 </resources>

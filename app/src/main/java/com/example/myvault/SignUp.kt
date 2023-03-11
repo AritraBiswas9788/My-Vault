@@ -3,6 +3,7 @@ package com.example.myvault
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.text.TextUtils
 import android.widget.Button
 import android.widget.Toast
 import com.google.firebase.auth.FirebaseAuth
@@ -39,7 +40,26 @@ class SignUp : AppCompatActivity() {
             val name=nameField.text.toString()
             val mail=mailField.text.toString()
             val pass=passField.text.toString()
-            SignUserUp(name,mail,pass)
+            if(TextUtils.isEmpty(nameField.text))
+            {
+                Toast.makeText(this,"Name Cannot Be Empty!", Toast.LENGTH_SHORT).show()
+            }
+            else
+               if(TextUtils.isEmpty(mailField.text))
+               {
+                Toast.makeText(this,"Email Cannot Be Empty!", Toast.LENGTH_SHORT).show()
+               }
+               else
+                if(TextUtils.isEmpty(passField.text))
+                {
+                    Toast.makeText(this,"Password Cannot Be Empty!", Toast.LENGTH_SHORT).show()
+                }
+                else
+                {
+                    SignUserUp(name,mail,pass)
+
+                }
+
 
         }
 
@@ -58,7 +78,6 @@ class SignUp : AppCompatActivity() {
                     val intent=Intent(this,MainActivity::class.java)
                     startActivity(intent)
                     finish()
-
                 }
                 else
                 {

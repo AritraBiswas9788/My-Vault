@@ -2,6 +2,7 @@ package com.example.myvault
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.TextUtils
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -31,7 +32,18 @@ class signIn : AppCompatActivity() {
         signInBt.setOnClickListener {
             val mail=mailField.text.toString()
             val pass=passField.text.toString()
-            SignUserIn(mail,pass)
+            if(TextUtils.isEmpty(mailField.text))
+            {
+                Toast.makeText(this,"Email Cannot Be Empty!", Toast.LENGTH_SHORT).show()
+            }
+            else
+                if(TextUtils.isEmpty(passField.text))
+                {
+                    Toast.makeText(this,"Password Cannot Be Empty!", Toast.LENGTH_SHORT).show()
+                }
+                else {
+                    SignUserIn(mail, pass)
+                }
         }
     }
     private fun SignUserIn(email:String,password:String)

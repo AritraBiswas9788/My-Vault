@@ -111,6 +111,7 @@
                 android:layout_height="60dp"
                 android:background="@drawable/editbg"
                 android:inputType="textPassword"
+                android:drawableTint="@color/white"
                 android:textColor="@color/white" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -119,10 +120,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="15dp"
-            android:background="@drawable/btnbg2"
+            android:background="@drawable/btnbg"
             android:fontFamily="@font/sarpanch"
-            android:paddingStart="35dp"
-            android:paddingEnd="35dp"
+            android:paddingStart="25dp"
+            android:paddingEnd="25dp"
             android:text="SIGN-UP"
             android:textColor="@color/white"
             android:textSize="35dp"
@@ -147,15 +148,17 @@
             app:layout_constraintTop_toTopOf="@+id/SignUpHeader"
             app:srcCompat="@drawable/person" />
 
-        <Button
+        <android.widget.Button
             android:id="@+id/JumpSignInBt"
-            android:layout_width="165dp"
+            android:layout_width="wrap_content"
             android:layout_height="50dp"
             android:layout_marginEnd="10dp"
             android:layout_marginBottom="25dp"
+            android:paddingTop="0dp"
+            android:paddingLeft="0dp"
+            android:paddingRight="15dp"
             android:background="@drawable/button_bg"
             android:drawableLeft="@drawable/arrowleft"
-            android:paddingRight="7dp"
             android:text="Log-IN"
             android:fontFamily="@font/sarpanch"
             android:textColor="@color/white"
@@ -168,7 +171,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="10dp"
-            android:background="@drawable/btnbg2"
+            android:background="#44000000"
             android:padding="5dp"
             android:text="Already have an account?"
             android:textColor="@color/white"
