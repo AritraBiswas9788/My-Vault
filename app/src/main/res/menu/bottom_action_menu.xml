@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <!--these items will be always visible
+         on the Bottom navigation bar-->
+    <item
+        android:id="@+id/profile"
+        android:icon="@drawable/person"
+        android:title="Home"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/Settings"
+        android:icon="@drawable/settings"
+        android:title="Settings"
+        app:showAsAction="always" />
+
+    <!--these items will be under the more
+        button of the Bottom navigation bar-->
+    <item
+        android:icon="@drawable/more"
+        android:title=""
+        app:showAsAction="always">
+
+        <menu>
+            <item
+                android:id="@+id/Search"
+                android:icon="@drawable/search"
+                android:title="Search"
+                app:showAsAction="ifRoom" />
+
+            <item
+                android:id="@+id/Profile"
+                android:icon="@drawable/person"
+                android:title="Profile"
+                app:showAsAction="ifRoom" />
+        </menu>
+
+    </item>
+
+</menu>

@@ -1,6 +1,5 @@
 package com.example.myvault
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -16,13 +15,16 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
+import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity()
                  Toast.makeText(this,"Cancelled",Toast.LENGTH_SHORT).show()
          }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //supportActionBar!!.setBackgroundDrawable( ColorDrawable(Color.parseColor("000000")))
         super.onCreate(savedInstanceState)
@@ -74,10 +77,10 @@ class MainActivity : AppCompatActivity()
         layoutTabs.addTab(layoutTabs.newTab().setText("IMAGES"))
         layoutTabs.addTab(layoutTabs.newTab().setText("PDFs"))
         viewPager.adapter=fragmentAdapter
-
         layoutTabs.addOnTabSelectedListener(object :OnTabSelectedListener{
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 viewPager.currentItem= tab!!.position
+                showBar()
             }
 
             override fun onTabUnselected(tab: TabLayout.Tab?) {
@@ -105,7 +108,6 @@ class MainActivity : AppCompatActivity()
              val dialog: Dialog = Dialog(this)
              dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
              dialog.setContentView(R.layout.bottomuploadtype)
-
              val imgButton: ImageButton =dialog.findViewById(R.id.imgButton)
              val pdfButton: ImageButton =dialog.findViewById(R.id.pdfButton)
              dialog.show()
@@ -129,6 +131,18 @@ class MainActivity : AppCompatActivity()
              }
 
          }
+         public fun hideBar()
+         {if(fab.isShown) {
+             bar.performHide()
+             fab.hide()
+         }
+         }
+         public fun showBar()
+         {if(!fab.isShown) {
+             bar.performShow()
+             fab.show()
+         }
+         }
          private fun launchImagePickActivity(intent: Intent) {
 
              imageLauncher.launch(intent)
@@ -145,8 +159,10 @@ class MainActivity : AppCompatActivity()
              uploadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
              uploadDialog.setContentView(R.layout.bottomuploadlayout)
              val imgFrame: ImageView =uploadDialog.findViewById(R.id.imageFrame)
+             val pdfFrame:com.github.barteksc.pdfviewer.PDFView=uploadDialog.findViewById(R.id.pdfFrame)
              val button: Button =uploadDialog.findViewById(R.id.uploadButton)
              val fileField: EditText =uploadDialog.findViewById(R.id.fileField)
+             val progressBar:ProgressBar=uploadDialog.findViewById(R.id.progressBar)
              val title:TextView=uploadDialog.findViewById(R.id.title)
              uploadDialog.show()
              uploadDialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -156,18 +172,23 @@ class MainActivity : AppCompatActivity()
              var filename= getFileName(this, file!!)
              filename= filename!!.substring(0, filename.lastIndexOf('.'))
              fileField.setText(filename,TextView.BufferType.EDITABLE)
-             if (uploadType.equals("image"))
+             if (uploadType.equals("image")) {
+                 pdfFrame.visibility=View.GONE
+                 imgFrame.visibility=View.VISIBLE
                  imgFrame.setImageURI(file)
+             }
              else {
+                   pdfFrame.visibility=View.VISIBLE
+                   imgFrame.visibility=View.GONE
                    title.text = "Upload PDF"
-                   imgFrame.setImageResource(R.drawable.pdficon)
+                   pdfFrame.fromUri(file).load()
                   }
              button.setOnClickListener {
                  filename=fileField.text.toString().trim()
                  filename=makeProperFilename(filename!!)
                  if(filename!!.isNotEmpty()) {
-                     uploadToDatabase(filename!!,uploadType)
-                     uploadDialog.hide()
+                     uploadToDatabase(filename!!,uploadType,progressBar,uploadDialog)
+                     //
                  }
                  else
                      Toast.makeText(this,"File-Name cannot empty!",Toast.LENGTH_SHORT).show()
@@ -189,30 +210,38 @@ class MainActivity : AppCompatActivity()
              val extension:String?=MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(file!!))
              return "$name.$extension"
          }
-         private fun uploadToDatabase(filename:String,filetype:String)
+         private fun uploadToDatabase(filename:String,filetype:String,progressBar: ProgressBar,uploadDialog:Dialog)
          {
              try{
                  file.let {
                      if (filetype.equals("image")) {
-                         cloudRef.child("Images/$filename").putFile(it!!).addOnCompleteListener {
+                         cloudRef.child("Images/$filename").putFile(file!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             uploadDialog.hide()
                              cloudRef.child("Images/$filename").downloadUrl.addOnSuccessListener { uri ->
                                  noteToDataBase(UploadFile(filename,uri.toString()),filetype)
                              }
                          //noteToDataBase(UploadFile(filename,cloudRef.child("Images/$filename").downloadUrl.toString()),filetype)
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
+                         }.addOnProgressListener { taskSnapShot ->
+                             val progress: Double = (100.0*(taskSnapShot.bytesTransferred))/taskSnapShot.totalByteCount
+                             progressBar.progress = progress.toInt()
                          }
                      }
                      else
                      {
-                         cloudRef.child("PDFs/$filename").putFile(it!!).addOnCompleteListener {
+                         cloudRef.child("PDFs/$filename").putFile(file!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             uploadDialog.hide()
                              cloudRef.child("PDFs/$filename").downloadUrl.addOnSuccessListener { uri ->
                                  noteToDataBase(UploadFile(filename,uri.toString()),filetype)
                              }
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
+                         }.addOnProgressListener { taskSnapShot ->
+                             val progress: Double = (100.0*(taskSnapShot.bytesTransferred))/taskSnapShot.totalByteCount
+                             progressBar.progress = progress.toInt()
                          }
                      }
                  }
@@ -228,10 +257,28 @@ class MainActivity : AppCompatActivity()
              if(uploadType.equals("image")) {
                  val key=dbRef.child("UploadFiles").child(userUid!!).child("Images").push().key
                  dbRef.child("UploadFiles").child(userUid).child("Images").child(key!!).setValue(upload)
+                 storageManager(upload,uploadType)
              }
              else {
                  val key=dbRef.child("UploadFiles").child(userUid!!).child("PDFs").push().key
                  dbRef.child("UploadFiles").child(userUid).child("PDFs").child(key!!).setValue(upload)
+             }
+         }
+         private fun storageManager(upload:UploadFile,uploadType: String)
+         {val userUid = UserAuth.currentUser?.uid
+             cloudRef.child("Images/${upload.filename}").metadata.addOnSuccessListener {
+                 val byteSize:Long = it.sizeBytes
+                 var data:StorageData
+                 dbRef.child("User").child(userUid!!).child("Storage").get().addOnSuccessListener {snap ->
+                    data = StorageData(snap.child("totalStorage").value.toString(),snap.child("imageMemory").value.toString(),snap.child("pdfMemory").value.toString())
+                     snap.ref.removeValue()
+                     val imSize = data.imageMemory!!.toLong() +byteSize
+                     val total = data.totalStorage!!.toLong()-byteSize
+                     val pdfSize = data.pdfMemory?.toLong()
+                     dbRef.child("User").child(userUid!!).child("Storage").setValue(StorageData(total.toString(),imSize.toString(), pdfSize.toString()))
+                 }
+             }.addOnFailureListener {
+                 Toast.makeText(this, "Meta Data Failed", Toast.LENGTH_SHORT).show()
              }
          }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
