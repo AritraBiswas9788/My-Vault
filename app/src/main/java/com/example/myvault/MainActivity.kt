@@ -1,6 +1,5 @@
 package com.example.myvault
 
-import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -59,6 +58,7 @@ class MainActivity : AppCompatActivity()
                  Toast.makeText(this,"Cancelled",Toast.LENGTH_SHORT).show()
          }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //supportActionBar!!.setBackgroundDrawable( ColorDrawable(Color.parseColor("000000")))
         super.onCreate(savedInstanceState)
@@ -74,7 +74,6 @@ class MainActivity : AppCompatActivity()
         layoutTabs.addTab(layoutTabs.newTab().setText("IMAGES"))
         layoutTabs.addTab(layoutTabs.newTab().setText("PDFs"))
         viewPager.adapter=fragmentAdapter
-
         layoutTabs.addOnTabSelectedListener(object :OnTabSelectedListener{
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 viewPager.currentItem= tab!!.position
@@ -105,7 +104,6 @@ class MainActivity : AppCompatActivity()
              val dialog: Dialog = Dialog(this)
              dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
              dialog.setContentView(R.layout.bottomuploadtype)
-
              val imgButton: ImageButton =dialog.findViewById(R.id.imgButton)
              val pdfButton: ImageButton =dialog.findViewById(R.id.pdfButton)
              dialog.show()
@@ -129,6 +127,16 @@ class MainActivity : AppCompatActivity()
              }
 
          }
+         public fun hideBar()
+         {
+             bar.performHide()
+             fab.hide()
+         }
+         public fun showBar()
+         {
+             bar.performShow()
+             fab.show()
+         }
          private fun launchImagePickActivity(intent: Intent) {
 
              imageLauncher.launch(intent)
@@ -145,8 +153,10 @@ class MainActivity : AppCompatActivity()
              uploadDialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
              uploadDialog.setContentView(R.layout.bottomuploadlayout)
              val imgFrame: ImageView =uploadDialog.findViewById(R.id.imageFrame)
+             val pdfFrame:com.github.barteksc.pdfviewer.PDFView=uploadDialog.findViewById(R.id.pdfFrame)
              val button: Button =uploadDialog.findViewById(R.id.uploadButton)
              val fileField: EditText =uploadDialog.findViewById(R.id.fileField)
+             val progressBar:ProgressBar=uploadDialog.findViewById(R.id.progressBar)
              val title:TextView=uploadDialog.findViewById(R.id.title)
              uploadDialog.show()
              uploadDialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
@@ -156,18 +166,23 @@ class MainActivity : AppCompatActivity()
              var filename= getFileName(this, file!!)
              filename= filename!!.substring(0, filename.lastIndexOf('.'))
              fileField.setText(filename,TextView.BufferType.EDITABLE)
-             if (uploadType.equals("image"))
+             if (uploadType.equals("image")) {
+                 pdfFrame.visibility=View.GONE
+                 imgFrame.visibility=View.VISIBLE
                  imgFrame.setImageURI(file)
+             }
              else {
+                   pdfFrame.visibility=View.VISIBLE
+                   imgFrame.visibility=View.GONE
                    title.text = "Upload PDF"
-                   imgFrame.setImageResource(R.drawable.pdficon)
+                   pdfFrame.fromUri(file).load()
                   }
              button.setOnClickListener {
                  filename=fileField.text.toString().trim()
                  filename=makeProperFilename(filename!!)
                  if(filename!!.isNotEmpty()) {
-                     uploadToDatabase(filename!!,uploadType)
-                     uploadDialog.hide()
+                     uploadToDatabase(filename!!,uploadType,progressBar,uploadDialog)
+                     //
                  }
                  else
                      Toast.makeText(this,"File-Name cannot empty!",Toast.LENGTH_SHORT).show()
@@ -189,30 +204,38 @@ class MainActivity : AppCompatActivity()
              val extension:String?=MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(file!!))
              return "$name.$extension"
          }
-         private fun uploadToDatabase(filename:String,filetype:String)
+         private fun uploadToDatabase(filename:String,filetype:String,progressBar: ProgressBar,uploadDialog:Dialog)
          {
              try{
                  file.let {
                      if (filetype.equals("image")) {
-                         cloudRef.child("Images/$filename").putFile(it!!).addOnCompleteListener {
+                         cloudRef.child("Images/$filename").putFile(file!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             uploadDialog.hide()
                              cloudRef.child("Images/$filename").downloadUrl.addOnSuccessListener { uri ->
                                  noteToDataBase(UploadFile(filename,uri.toString()),filetype)
                              }
                          //noteToDataBase(UploadFile(filename,cloudRef.child("Images/$filename").downloadUrl.toString()),filetype)
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
+                         }.addOnProgressListener { taskSnapShot ->
+                             val progress: Double = (100.0*(taskSnapShot.bytesTransferred))/taskSnapShot.totalByteCount
+                             progressBar.progress = progress.toInt()
                          }
                      }
                      else
                      {
-                         cloudRef.child("PDFs/$filename").putFile(it!!).addOnCompleteListener {
+                         cloudRef.child("PDFs/$filename").putFile(file!!).addOnCompleteListener {
                              Toast.makeText(this, "Upload successful", Toast.LENGTH_SHORT).show()
+                             uploadDialog.hide()
                              cloudRef.child("PDFs/$filename").downloadUrl.addOnSuccessListener { uri ->
                                  noteToDataBase(UploadFile(filename,uri.toString()),filetype)
                              }
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
+                         }.addOnProgressListener { taskSnapShot ->
+                             val progress: Double = (100.0*(taskSnapShot.bytesTransferred))/taskSnapShot.totalByteCount
+                             progressBar.progress = progress.toInt()
                          }
                      }
                  }
