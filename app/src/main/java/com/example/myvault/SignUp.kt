@@ -165,6 +165,6 @@ class SignUp : AppCompatActivity() {
         dbRef=FirebaseDatabase.getInstance().getReference()
 
         dbRef.child("User").child(uid).setValue(User(name, email, uid))
-        dbRef.child("User").child(uid).child("Storage").setValue(StorageData("524288000","0","0"))
+        dbRef.child("User").child(uid).child("Storage").setValue(StorageData("0","0","524288000"))
     }
 }

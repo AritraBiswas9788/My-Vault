@@ -1,5 +1,6 @@
 package com.example.myvault
 
+import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -13,6 +14,7 @@ import android.webkit.MimeTypeMap
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.DialogTitle
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
 import com.google.android.gms.tasks.OnSuccessListener
@@ -27,6 +29,7 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
+import kotlin.system.exitProcess
 
 class MainActivity : AppCompatActivity()
      {private lateinit var UserAuth: FirebaseAuth
@@ -101,6 +104,48 @@ class MainActivity : AppCompatActivity()
         fab.setOnClickListener {
             val intent=Intent(Intent.ACTION_GET_CONTENT)
             showUploadTypeDialog(intent)
+        }
+        bar.replaceMenu(R.menu.bottom_action_menu)
+        bar.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.profile -> {
+                    Toast.makeText(this, "Profile Activity", Toast.LENGTH_SHORT)
+                        .show()
+                    true
+                }
+                R.id.Storage -> {
+                    Toast.makeText(this, "Storage Activity", Toast.LENGTH_SHORT)
+                        .show()
+
+                    val intent =Intent(this,StorageAnalyzer::class.java)
+                    startActivity(intent)
+                    true
+                }
+                R.id.LogOut -> {
+                    Toast.makeText(this, "LogOut Activity", Toast.LENGTH_SHORT)
+                        .show()
+                    logUserOut()
+                    true
+                }
+                R.id.Exit -> {
+                    val builder: AlertDialog.Builder= AlertDialog.Builder(this)
+                    builder.setMessage("Do you want to exit the application?")
+                    builder.setTitle("EXIT APPLICATION")
+                    builder.apply {
+                        setPositiveButton("YES") { dialog, id ->
+                            finishAffinity()
+                            exitProcess(0)
+                        }
+                        setNegativeButton("CANCEL"){dialog, id ->
+                            Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    val dialog: AlertDialog =builder.create()
+                    dialog.show()
+                    true
+                }
+                else -> false
+            }
         }
 
     }
@@ -184,14 +229,26 @@ class MainActivity : AppCompatActivity()
                    pdfFrame.fromUri(file).load()
                   }
              button.setOnClickListener {
-                 filename=fileField.text.toString().trim()
-                 filename=makeProperFilename(filename!!)
-                 if(filename!!.isNotEmpty()) {
-                     uploadToDatabase(filename!!,uploadType,progressBar,uploadDialog)
-                     //
-                 }
-                 else
-                     Toast.makeText(this,"File-Name cannot empty!",Toast.LENGTH_SHORT).show()
+                 val userUid = UserAuth.currentUser?.uid
+                 var totalMemory:Long= 0L
+                 dbRef.child("User").child(userUid!!).child("Storage").get()
+                     .addOnSuccessListener { snap ->
+                         totalMemory= snap.child("totalMemory").value.toString().toLong()
+                         if (getFileSize(this, file!!) < totalMemory) {
+                             filename = fileField.text.toString().trim()
+                             filename = makeProperFilename(filename!!)
+                             if (filename!!.isNotEmpty()) {
+                                 uploadToDatabase(filename!!, uploadType, progressBar, uploadDialog)
+                             } else
+                                 Toast.makeText(this, "File-Name cannot empty!", Toast.LENGTH_SHORT)
+                                     .show()
+                         } else {
+                             createAlertDialog("The size of the file exceeds the Cloud-memory available to you")
+                             uploadDialog.hide()
+                         }
+                     }.addOnFailureListener {
+                         Toast.makeText(this, "Data Fetch Failed", Toast.LENGTH_SHORT).show()
+                     }
              }
          }
          private fun getFileName(context: Context,uri: Uri):String?
@@ -203,7 +260,55 @@ class MainActivity : AppCompatActivity()
              cursor?.close()
              return filename
          }
+         private fun getFileSize(context: Context,uri: Uri):Long
+         {
+             val fileSize: Long
+             val cursor=context.contentResolver.query(uri,null,null,null,null)
+             cursor?.moveToFirst()
+             fileSize= cursor?.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))!!.toLong()
+             cursor.close()
+             Toast.makeText(this, "File-Size: $fileSize", Toast.LENGTH_SHORT).show()
+             return fileSize
+         }
+         private fun createAlertDialog(message:String)
+         {
 
+             val builder: AlertDialog.Builder= AlertDialog.Builder(this)
+             builder.setMessage(message)
+             builder.setTitle("Upload error")
+             builder.apply {
+                 setPositiveButton("OK") { dialog, id ->
+                 }
+             }
+             val dialog: AlertDialog =builder.create()
+             dialog.show()
+         }
+
+         /*
+         private fun getTotalMemoryLeft():Long
+         {val userUid = UserAuth.currentUser?.uid
+             var ret:Long= 0L
+             dbRef.child("User").child(userUid!!).child("Storage").get()
+                 .addOnSuccessListener{ snap ->
+                     //val data =snap.child("totalMemory").value.toString()
+                     //ret=data.toLong()
+                     val data = StorageData(
+                         snap.child("imageMemory").value.toString(),
+                         snap.child("pdfMemory").value.toString(),
+                         snap.child("totalMemory").value.toString()
+                     )
+                     Toast.makeText(this, "mem in: ${data.totalMemory!!}", Toast.LENGTH_SHORT).show()
+                     //snap.ref.removeValue()
+                     //val imSize = data.imageMemory!!.toLong()
+                     ret = data.totalMemory!!.toLong()
+                     //val pdfSize = data.pdfMemory!!.toLong() + byteSize
+                 }.addOnFailureListener {
+                     Toast.makeText(this, "Data Fetch Failed", Toast.LENGTH_SHORT).show()
+                 }
+             Toast.makeText(this, "mem ret: $ret", Toast.LENGTH_SHORT).show()
+             return ret
+         }
+          */
          private fun makeProperFilename(filename: String):String
          {   var name= "$filename "
              name=name.substring(0, name.indexOf(' '))
@@ -262,24 +367,91 @@ class MainActivity : AppCompatActivity()
              else {
                  val key=dbRef.child("UploadFiles").child(userUid!!).child("PDFs").push().key
                  dbRef.child("UploadFiles").child(userUid).child("PDFs").child(key!!).setValue(upload)
+                 storageManager(upload,uploadType)
              }
          }
-         private fun storageManager(upload:UploadFile,uploadType: String)
-         {val userUid = UserAuth.currentUser?.uid
-             cloudRef.child("Images/${upload.filename}").metadata.addOnSuccessListener {
-                 val byteSize:Long = it.sizeBytes
-                 var data:StorageData
-                 dbRef.child("User").child(userUid!!).child("Storage").get().addOnSuccessListener {snap ->
-                    data = StorageData(snap.child("totalStorage").value.toString(),snap.child("imageMemory").value.toString(),snap.child("pdfMemory").value.toString())
-                     snap.ref.removeValue()
-                     val imSize = data.imageMemory!!.toLong() +byteSize
-                     val total = data.totalStorage!!.toLong()-byteSize
-                     val pdfSize = data.pdfMemory?.toLong()
-                     dbRef.child("User").child(userUid!!).child("Storage").setValue(StorageData(total.toString(),imSize.toString(), pdfSize.toString()))
+         private fun storageManager(upload:UploadFile,uploadType: String) {
+             val userUid = UserAuth.currentUser?.uid
+             if (uploadType.equals("image")) {
+                 cloudRef.child("Images/${upload.filename}").metadata.addOnSuccessListener {
+                     val byteSize: Long = it.sizeBytes
+                     var data: StorageData
+                     dbRef.child("User").child(userUid!!).child("Storage").get()
+                         .addOnSuccessListener { snap ->
+                             data = StorageData(
+                                 snap.child("imageMemory").value.toString(),
+                                 snap.child("pdfMemory").value.toString(),
+                                 snap.child("totalMemory").value.toString()
+                             )
+                             snap.ref.removeValue()
+                             val imSize = data.imageMemory!!.toLong() + byteSize
+                             val total = data.totalMemory!!.toLong() - byteSize
+                             val pdfSize = data.pdfMemory!!.toLong()
+                             dbRef.child("User").child(userUid!!).child("Storage").setValue(
+                                 StorageData(
+                                     imSize.toString(),
+                                     pdfSize.toString(),
+                                     total.toString()
+                                 )
+                             )
+                         }
+                 }.addOnFailureListener {
+                     Toast.makeText(this, "Meta Data Failed", Toast.LENGTH_SHORT).show()
                  }
-             }.addOnFailureListener {
-                 Toast.makeText(this, "Meta Data Failed", Toast.LENGTH_SHORT).show()
              }
+             else
+             {
+                 cloudRef.child("PDFs/${upload.filename}").metadata.addOnSuccessListener {
+                     val byteSize: Long = it.sizeBytes
+                     var data: StorageData
+                     dbRef.child("User").child(userUid!!).child("Storage").get()
+                         .addOnSuccessListener { snap ->
+                             data = StorageData(
+                                 snap.child("imageMemory").value.toString(),
+                                 snap.child("pdfMemory").value.toString(),
+                                 snap.child("totalMemory").value.toString()
+                             )
+                             snap.ref.removeValue()
+                             val imSize = data.imageMemory!!.toLong()
+                             val total = data.totalMemory!!.toLong() - byteSize
+                             val pdfSize = data.pdfMemory!!.toLong() + byteSize
+                             dbRef.child("User").child(userUid!!).child("Storage").setValue(
+                                 StorageData(
+                                     imSize.toString(),
+                                     pdfSize.toString(),
+                                     total.toString()
+                                 )
+                             )
+                         }
+                 }.addOnFailureListener {
+                     Toast.makeText(this, "Meta Data Failed", Toast.LENGTH_SHORT).show()
+                 }
+             }
+
+         }
+         private fun logUserOut()
+         {
+             val builder: AlertDialog.Builder= AlertDialog.Builder(this)
+             builder.setMessage("Do you want to log-out ?")
+             builder.setTitle("LOG-OUT")
+             builder.apply {
+                 setPositiveButton("YES") { dialog, id ->
+                     UserAuth.signOut()
+                     val prefs=getSharedPreferences("UserData", MODE_PRIVATE)
+                     val editor=prefs.edit()
+                     editor.putString("UserUID","UID")
+                     editor.commit()
+                     val intent= Intent(this@MainActivity,launch_screen::class.java)
+                     startActivity(intent)
+                     finish()
+                 }
+                 setNegativeButton("CANCEL"){dialog, id ->
+                     Toast.makeText(context, "Log-Out Cancelled", Toast.LENGTH_SHORT).show()
+                 }
+             }
+             val dialog: AlertDialog =builder.create()
+             dialog.show()
+
          }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu,menu)
@@ -290,14 +462,19 @@ class MainActivity : AppCompatActivity()
         if(item.itemId == R.id.LogOut)
         {
             //Logout logic
+            /*
             UserAuth.signOut()
             val prefs=getSharedPreferences("UserData", MODE_PRIVATE)
             val editor=prefs.edit()
             editor.putString("UserUID","UID")
             editor.commit()
+
+
             val intent= Intent(this@MainActivity,launch_screen::class.java)
             startActivity(intent)
             finish()
+            */
+            logUserOut()
             return true
         }
         return false

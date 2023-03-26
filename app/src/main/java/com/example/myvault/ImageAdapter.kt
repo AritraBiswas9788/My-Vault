@@ -47,7 +47,7 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
             builder.apply {
                 setPositiveButton("Yes") { dialog, id ->
                     //Toast.makeText(context, "Delete action!!", Toast.LENGTH_SHORT).show()
-                    deleteFile(file)
+                    manageStorage(file)
                 }
                 setNegativeButton("Cancel") { dialog, id ->
                     Toast.makeText(context, "Cancelled!!", Toast.LENGTH_SHORT).show()
@@ -55,7 +55,40 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
             }
             val dialog: AlertDialog =builder.create()
             dialog.show()
+        }
+    }
 
+    private fun manageStorage(file: UploadFile)
+    {
+        val dbRef=FirebaseDatabase.getInstance().reference
+        val UserAuth= FirebaseAuth.getInstance()
+        val cloudRef=Firebase.storage.reference
+        val userUid = UserAuth.currentUser?.uid
+        cloudRef.child("Images/${file.filename}").metadata.addOnSuccessListener {
+            val byteSize: Long = it.sizeBytes
+            var data: StorageData
+            dbRef.child("User").child(userUid!!).child("Storage").get()
+                .addOnSuccessListener { snap ->
+                    data = StorageData(
+                        snap.child("imageMemory").value.toString(),
+                        snap.child("pdfMemory").value.toString(),
+                        snap.child("totalMemory").value.toString()
+                    )
+                    snap.ref.removeValue()
+                    val imSize = data.imageMemory!!.toLong() - byteSize
+                    val total = data.totalMemory!!.toLong() + byteSize
+                    val pdfSize = data.pdfMemory!!.toLong()
+                    dbRef.child("User").child(userUid!!).child("Storage").setValue(
+                        StorageData(
+                            imSize.toString(),
+                            pdfSize.toString(),
+                            total.toString()
+                        )
+                    )
+                    deleteFile(file)
+                }
+        }.addOnFailureListener {
+            Toast.makeText(context, "Meta Data Failed", Toast.LENGTH_SHORT).show()
         }
     }
     private fun deleteFile(file: UploadFile) {
