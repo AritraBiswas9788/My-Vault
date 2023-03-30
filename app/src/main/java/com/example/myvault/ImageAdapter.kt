@@ -34,7 +34,10 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
     override fun onBindViewHolder(holder: ImageViewHolder, position: Int) {
         val file:UploadFile= fileList[position]
         holder.title.text=file.filename
-        Glide.with(context).load(file.fileUri).into(holder.image)
+        Glide.with(context)
+            .load(file.fileUri)
+            .placeholder(R.drawable.imageicon)
+            .into(holder.image)
         holder.itemView.setOnClickListener {
             val intent=Intent(context,FullImageViewer::class.java)
             intent.putExtra("Name",file.filename)
@@ -50,7 +53,7 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
                     manageStorage(file)
                 }
                 setNegativeButton("Cancel") { dialog, id ->
-                    Toast.makeText(context, "Cancelled!!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Delete Cancelled", Toast.LENGTH_SHORT).show()
                 }
             }
             val dialog: AlertDialog =builder.create()
@@ -78,7 +81,7 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
                     val imSize = data.imageMemory!!.toLong() - byteSize
                     val total = data.totalMemory!!.toLong() + byteSize
                     val pdfSize = data.pdfMemory!!.toLong()
-                    dbRef.child("User").child(userUid!!).child("Storage").setValue(
+                    dbRef.child("User").child(userUid).child("Storage").setValue(
                         StorageData(
                             imSize.toString(),
                             pdfSize.toString(),
@@ -88,7 +91,7 @@ class ImageAdapter(val context: Context, val fileList: ArrayList<UploadFile>):Re
                     deleteFile(file)
                 }
         }.addOnFailureListener {
-            Toast.makeText(context, "Meta Data Failed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Data Fetch Failed", Toast.LENGTH_SHORT).show()
         }
     }
     private fun deleteFile(file: UploadFile) {

@@ -31,7 +31,6 @@
             android:textColor="@color/white"
             android:textSize="50sp"
             android:textStyle="bold"
-
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.918"
@@ -115,19 +114,21 @@
                 android:textColor="@color/white" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <android.widget.Button
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/signUpButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="15dp"
+            android:layout_marginTop="5dp"
             android:fontFamily="@font/sarpanch"
-            android:background="@drawable/btnbg"
-            android:paddingStart="25dp"
-            android:paddingEnd="25dp"
+            android:paddingStart="30dp"
+            android:paddingEnd="30dp"
             android:text="SIGN-UP"
+            app:cornerRadius="20dp"
+            app:elevation="20dp"
             android:textColor="@color/white"
-            android:textSize="35dp"
+            android:textSize="30dp"
             android:textStyle="bold"
+            android:backgroundTint="#83000000"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.503"
@@ -148,36 +149,44 @@
             app:layout_constraintTop_toTopOf="@+id/SignUpHeader"
             app:srcCompat="@drawable/person" />
 
-        <android.widget.Button
-            android:id="@+id/JumpSignInBt"
-            android:layout_width="wrap_content"
-            android:layout_height="50dp"
-            android:layout_marginEnd="10dp"
-            android:layout_marginBottom="25dp"
-            android:paddingTop="0dp"
-            android:paddingLeft="0dp"
-            android:paddingRight="15dp"
-            android:background="@drawable/button_bg"
-            android:drawableLeft="@drawable/arrowleft"
-            android:text="Log-IN"
-            android:fontFamily="@font/sarpanch"
-            android:textColor="@color/white"
-            android:textSize="25sp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <TextView
-            android:id="@+id/textView2"
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
-            android:background="#44000000"
-            android:padding="5dp"
-            android:text="Already have an account?"
-            android:textColor="@color/white"
-            android:textSize="12dp"
-            app:layout_constraintBottom_toTopOf="@+id/JumpSignInBt"
-            app:layout_constraintEnd_toEndOf="parent" />
+            android:layout_marginBottom="20dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/signUpButton">
+
+            <android.widget.Button
+                android:id="@+id/JumpSignInBt"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginEnd="10dp"
+                android:background="@drawable/button_bg"
+                android:drawableLeft="@drawable/arrowleft"
+                android:fontFamily="@font/sarpanch"
+                android:paddingLeft="0dp"
+                android:paddingTop="0dp"
+                android:paddingRight="15dp"
+                android:text="Log-IN"
+                android:textColor="@color/white"
+                android:textSize="25sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#44000000"
+                android:padding="5dp"
+                android:text="Already have an account?"
+                android:textColor="@color/white"
+                android:textSize="12dp"
+                app:layout_constraintBottom_toTopOf="@+id/JumpSignInBt"
+                app:layout_constraintEnd_toEndOf="@+id/JumpSignInBt"
+                app:layout_constraintStart_toStartOf="@+id/JumpSignInBt" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

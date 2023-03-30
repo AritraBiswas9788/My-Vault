@@ -12,6 +12,9 @@
         android:theme="@style/Theme.MyVault"
         tools:targetApi="31">
         <activity
+            android:name=".profileActivity"
+            android:exported="false" />
+        <activity
             android:name=".StorageAnalyzer"
             android:exported="false" />
         <activity

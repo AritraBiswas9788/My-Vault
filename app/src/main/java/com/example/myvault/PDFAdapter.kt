@@ -45,11 +45,11 @@ class PDFAdapter(val context: Context, val fileList: ArrayList<UploadFile>): Rec
             builder.setMessage("Do you want to delete ${file.filename} permanently??")
             builder.apply {
                 setPositiveButton("Yes") { dialog, id ->
-                    Toast.makeText(context, "Delete action!!", Toast.LENGTH_SHORT).show()
+                    //Toast.makeText(context, "Delete action!!", Toast.LENGTH_SHORT).show()
                         manageStorage(file)
                 }
                 setNegativeButton("Cancel") { dialog, id ->
-                    Toast.makeText(context, "Cancelled!!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Delete Cancelled", Toast.LENGTH_SHORT).show()
                 }
             }
             val dialog:AlertDialog=builder.create()
@@ -87,7 +87,7 @@ class PDFAdapter(val context: Context, val fileList: ArrayList<UploadFile>): Rec
                     deleteFile(file)
                 }
         }.addOnFailureListener {
-            Toast.makeText(context, "Meta Data Failed", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Data Fetch Failed", Toast.LENGTH_SHORT).show()
         }
     }
     private fun deleteFile(file: UploadFile) {

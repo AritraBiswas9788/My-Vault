@@ -33,23 +33,24 @@ class StorageAnalyzer : AppCompatActivity() {
         setContentView(R.layout.activity_storage_analyzer)
         supportActionBar?.title ="STORAGE ANALYZER"
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
+        dbRef= FirebaseDatabase.getInstance().reference
+        UserAuth= FirebaseAuth.getInstance()
         pieChart=findViewById(R.id.pieChart)
         imText=findViewById(R.id.imageMemory)
         pdfText=findViewById(R.id.pdfMemory)
         memText=findViewById(R.id.totalMemory)
-        dbRef= FirebaseDatabase.getInstance().reference
-        UserAuth= FirebaseAuth.getInstance()
         var data:StorageData
         val userUid = UserAuth.currentUser?.uid
 
         pieChart.isDrawHoleEnabled=true
+        pieChart.setHoleColor(Color.TRANSPARENT)
         //pieChart.setUsePercentValues(true)
         //pieChart.setEntryLabelColor(Color.BLACK)
         //pieChart.setEntryLabelTextSize(12f)
         pieChart.setDrawEntryLabels(false)
         pieChart.centerText="MEMORY ANALYSIS"
         pieChart.setCenterTextSize(16f)
+        pieChart.setCenterTextColor(Color.WHITE)
 
         pieChart.description.isEnabled=false
         pieChart.setExtraOffsets(5f,5f,20f,5f)
@@ -59,6 +60,7 @@ class StorageAnalyzer : AppCompatActivity() {
         l.horizontalAlignment=Legend.LegendHorizontalAlignment.RIGHT
         l.orientation=Legend.LegendOrientation.VERTICAL
         l.setDrawInside(false)
+        l.textColor=Color.WHITE
         l.isEnabled=true
         l.textSize=12f
         l.xOffset=0f
@@ -84,7 +86,7 @@ class StorageAnalyzer : AppCompatActivity() {
                     value=(num.roundToInt()/(100.0)).toString()
 
                 }
-                value="Image Memory: $value mb"
+                value="Image Memory: $value MB"
                 imText.text=value
                 num =data.pdfMemory!!.toFloat()/(1024.0*1024.0)
                 if (num>1.0f)
@@ -106,7 +108,7 @@ class StorageAnalyzer : AppCompatActivity() {
                     value=(num.roundToInt()/(100.0)).toString()
 
                 }
-                value="Total Memory Left: $value mb"
+                value="Total Memory Left: $value MB"
 
                 memText.text=value
                // imText.clearAnimation()

@@ -12,7 +12,7 @@ class signIn : AppCompatActivity() {
     private lateinit var mailField:com.google.android.material.textfield.TextInputEditText
     private lateinit var passField:com.google.android.material.textfield.TextInputEditText
     private lateinit var jumpBt:Button
-    private lateinit var signInBt: Button
+    private lateinit var signInBt: com.google.android.material.button.MaterialButton
     private lateinit var UserAuth:FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         supportActionBar?.hide()

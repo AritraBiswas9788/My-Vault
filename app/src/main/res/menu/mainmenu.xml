@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <!--these items will be always visible
+         on the Bottom navigation bar-->
+
+    <item
+        android:icon="@drawable/more"
+        android:title=""
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/Profile"
+                android:icon="@drawable/personblack"
+                android:iconTint="@color/black"
+                android:title="PROFILE"
+                />
+            <item
+                android:id="@+id/Storage"
+                android:icon="@drawable/storageiconblack"
+                android:iconTint="@color/black"
+                android:title="STORAGE ANALYZER"
+                />
+            <item
+                android:id="@+id/Exit"
+                android:icon="@drawable/exiticon"
+                android:iconTint="@color/black"
+                android:title="EXIT APPLICATION"
+                app:showAsAction="ifRoom" />
+            <item
+                android:id="@+id/LogOut"
+                android:icon="@drawable/logouticon"
+                app:iconTint="@color/black"
+                android:title="LOG-OUT"
+                app:showAsAction="ifRoom" />
+        </menu>
+
+    </item>
+
+</menu>

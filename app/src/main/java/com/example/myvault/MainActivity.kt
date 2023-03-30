@@ -14,19 +14,15 @@ import android.webkit.MimeTypeMap
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.DialogTitle
 import androidx.viewpager2.widget.ViewPager2
 import androidx.viewpager2.widget.ViewPager2.OnPageChangeCallback
-import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.tabs.TabLayout
 import com.google.android.material.tabs.TabLayout.OnTabSelectedListener
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.StorageMetadata
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.ktx.storage
 import kotlin.system.exitProcess
@@ -102,28 +98,31 @@ class MainActivity : AppCompatActivity()
         })
 
         fab.setOnClickListener {
-            val intent=Intent(Intent.ACTION_GET_CONTENT)
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
             showUploadTypeDialog(intent)
         }
+
         bar.replaceMenu(R.menu.bottom_action_menu)
         bar.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.profile -> {
-                    Toast.makeText(this, "Profile Activity", Toast.LENGTH_SHORT)
-                        .show()
+                    //Toast.makeText(this, "Profile Activity", Toast.LENGTH_SHORT)
+                        //.show()
+                    val intent =Intent(this,profileActivity::class.java)
+                    startActivity(intent)
                     true
                 }
                 R.id.Storage -> {
-                    Toast.makeText(this, "Storage Activity", Toast.LENGTH_SHORT)
-                        .show()
+                    //Toast.makeText(this, "Storage Activity", Toast.LENGTH_SHORT)
+                      //  .show()
 
                     val intent =Intent(this,StorageAnalyzer::class.java)
                     startActivity(intent)
                     true
                 }
                 R.id.LogOut -> {
-                    Toast.makeText(this, "LogOut Activity", Toast.LENGTH_SHORT)
-                        .show()
+                    //Toast.makeText(this, "LogOut Activity", Toast.LENGTH_SHORT)
+                        //.show()
                     logUserOut()
                     true
                 }
@@ -160,7 +159,6 @@ class MainActivity : AppCompatActivity()
              dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
              dialog.window?.attributes?.windowAnimations=R.style.DialogAnimation
              dialog.window?.setGravity(Gravity.BOTTOM)
-
              imgButton.setOnClickListener{
                  Toast.makeText(this,"IMAGE UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show()
                  dialog.hide()
@@ -267,7 +265,7 @@ class MainActivity : AppCompatActivity()
              cursor?.moveToFirst()
              fileSize= cursor?.getString(cursor.getColumnIndexOrThrow(OpenableColumns.SIZE))!!.toLong()
              cursor.close()
-             Toast.makeText(this, "File-Size: $fileSize", Toast.LENGTH_SHORT).show()
+             //Toast.makeText(this, "File-Size: $fileSize", Toast.LENGTH_SHORT).show()
              return fileSize
          }
          private fun createAlertDialog(message:String)
@@ -310,10 +308,10 @@ class MainActivity : AppCompatActivity()
          }
           */
          private fun makeProperFilename(filename: String):String
-         {   var name= "$filename "
-             name=name.substring(0, name.indexOf(' '))
+         {   //var name= "$filename "
+             //name=name.substring(0, name.indexOf(' '))
              val extension:String?=MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(file!!))
-             return "$name.$extension"
+             return "$filename.$extension"
          }
          private fun uploadToDatabase(filename:String,filetype:String,progressBar: ProgressBar,uploadDialog:Dialog)
          {
@@ -451,30 +449,45 @@ class MainActivity : AppCompatActivity()
              }
              val dialog: AlertDialog =builder.create()
              dialog.show()
-
          }
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu,menu)
+        menuInflater.inflate(R.menu.mainmenu,menu)
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if(item.itemId == R.id.LogOut)
         {
-            //Logout logic
-            /*
-            UserAuth.signOut()
-            val prefs=getSharedPreferences("UserData", MODE_PRIVATE)
-            val editor=prefs.edit()
-            editor.putString("UserUID","UID")
-            editor.commit()
-
-
-            val intent= Intent(this@MainActivity,launch_screen::class.java)
-            startActivity(intent)
-            finish()
-            */
             logUserOut()
+            return true
+        }
+        if(item.itemId==R.id.Profile)
+        {val intent =Intent(this,profileActivity::class.java)
+            startActivity(intent)
+            return true
+        }
+        if(item.itemId==R.id.Storage)
+        {
+            val intent =Intent(this,StorageAnalyzer::class.java)
+            startActivity(intent)
+            return true
+        }
+        if(item.itemId==R.id.Exit)
+        {
+            val builder: AlertDialog.Builder= AlertDialog.Builder(this)
+            builder.setMessage("Do you want to exit the application?")
+            builder.setTitle("EXIT APPLICATION")
+            builder.apply {
+                setPositiveButton("YES") { dialog, id ->
+                    finishAffinity()
+                    exitProcess(0)
+                }
+                setNegativeButton("CANCEL"){dialog, id ->
+                    Toast.makeText(context, "Cancelled", Toast.LENGTH_SHORT).show()
+                }
+            }
+            val dialog: AlertDialog =builder.create()
+            dialog.show()
             return true
         }
         return false

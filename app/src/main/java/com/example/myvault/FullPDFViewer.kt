@@ -6,10 +6,15 @@ import android.os.Handler
 import android.os.Looper
 import android.view.MenuItem
 import android.view.View
+import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import com.github.barteksc.pdfviewer.scroll.DefaultScrollHandle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import java.io.BufferedInputStream
 import java.io.IOException
 import java.io.InputStream
@@ -22,7 +27,7 @@ class FullPDFViewer : AppCompatActivity() {
     private lateinit var pdfFrame:com.github.barteksc.pdfviewer.PDFView
     private lateinit var fab:com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
     private lateinit var viewMode:com.google.android.material.button.MaterialButtonToggleGroup
-
+    private lateinit var loadSpinner:ProgressBar
     @RequiresApi(Build.VERSION_CODES.M)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,6 +40,7 @@ class FullPDFViewer : AppCompatActivity() {
         fab=findViewById(R.id.DownloadFab)
         viewMode=findViewById(R.id.ButtonGroup)
         viewMode.check(R.id.ScrollerMode)
+        loadSpinner=findViewById(R.id.loadingSpinner)
         viewMode.isSelectionRequired=true
         loadPDFFileWithPDFMode("Scroller",fileUri)
         /*
@@ -80,8 +86,15 @@ class FullPDFViewer : AppCompatActivity() {
         viewMode.addOnButtonCheckedListener { group, checkedId, isChecked ->
             if(isChecked) {
                 when(checkedId){
-                    R.id.ReaderMode -> loadPDFFileWithPDFMode("Reader",fileUri)
-                    R.id.ScrollerMode -> loadPDFFileWithPDFMode("Scroller",fileUri)
+                    R.id.ReaderMode -> {
+                        loadSpinner.visibility=View.VISIBLE
+                        loadPDFFileWithPDFMode("Reader",fileUri)
+                    }
+
+                    R.id.ScrollerMode -> {
+                        loadSpinner.visibility = View.VISIBLE
+                        loadPDFFileWithPDFMode("Scroller", fileUri)
+                    }
                 }
             } else
                 if(viewMode.checkedButtonId== View.NO_ID) {
@@ -91,7 +104,9 @@ class FullPDFViewer : AppCompatActivity() {
         //pdfFrame.fromUri(fileUri.toUri()).load()
 
     }
-    private fun loadPDFFileWithPDFMode(viewmode:String,fileUri:String)
+
+
+    private fun loadPDFFileWithPDFMode(viewmode:String, fileUri:String)
     { val executor=Executors.newSingleThreadExecutor()
         val handler=Handler(Looper.getMainLooper())
 
@@ -118,14 +133,20 @@ class FullPDFViewer : AppCompatActivity() {
                         .pageSnap(true) // snap pages to screen boundaries
                         .pageFling(true) // make a fling change only a single page like ViewPager
                         .autoSpacing(true)
+                        .onRender {
+                            loadSpinner.visibility=View.GONE
+                        }
                         .load()
 
                 }
                 else
                 {
-                    Toast.makeText(this,"Reader Mode",Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this,"Scroller Mode",Toast.LENGTH_SHORT).show()
                     pdfFrame.fromStream(inputStream)
                         .scrollHandle(DefaultScrollHandle(this))
+                        .onRender {
+                            loadSpinner.visibility=View.GONE
+                        }
                         .load()
                 }
             }
