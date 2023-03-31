@@ -11,13 +11,13 @@
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="40dp"
+        android:fontFamily="@font/sarpanch"
         android:text="@string/upload_image"
         android:textColor="@color/black"
         android:textSize="35dp"
         android:textStyle="bold"
-        android:fontFamily="@font/sarpanch"
-        android:layout_marginBottom="40dp"
-        android:layout_marginTop="20dp"
         app:layout_constraintBottom_toTopOf="@+id/cardViewFrame"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -29,9 +29,9 @@
         android:id="@+id/cardViewFrame"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
         app:cardCornerRadius="20dp"
         app:cardElevation="20dp"
-        android:layout_marginTop="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -41,13 +41,14 @@
             android:id="@+id/imageFrame"
             android:layout_width="250dp"
             android:layout_height="300dp"
-            android:src="@drawable/key"
             android:scaleType="centerCrop"
+            android:src="@drawable/key"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
+
         <com.github.barteksc.pdfviewer.PDFView
             android:id="@+id/pdfFrame"
             android:layout_width="300dp"
@@ -56,16 +57,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.cardview.widget.CardView>
 
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/fileField"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:backgroundTint="@color/black"
         android:hint="File Name"
         android:selectAllOnFocus="true"
-        android:backgroundTint="@color/black"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/uploadButton"
         app:layout_constraintHorizontal_bias="0.5"
@@ -92,5 +93,15 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
+
+    <ProgressBar
+        android:id="@+id/spinner"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:indeterminate="true"
+        app:layout_constraintBottom_toBottomOf="@+id/title"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/title"
+        app:layout_constraintTop_toTopOf="@+id/title" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

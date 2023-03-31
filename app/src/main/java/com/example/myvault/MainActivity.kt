@@ -160,14 +160,14 @@ class MainActivity : AppCompatActivity()
              dialog.window?.attributes?.windowAnimations=R.style.DialogAnimation
              dialog.window?.setGravity(Gravity.BOTTOM)
              imgButton.setOnClickListener{
-                 Toast.makeText(this,"IMAGE UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show()
+                 //Toast.makeText(this,"IMAGE UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show()
                  dialog.hide()
                  intent.type="image/*"
                  launchImagePickActivity(intent)
 
              }
              pdfButton.setOnClickListener {
-                 Toast.makeText(this,"PDF UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show()
+                 //Toast.makeText(this,"PDF UPLOAD ACTIVITY", Toast.LENGTH_SHORT).show()
                  dialog.hide()
                  intent.type="application/pdf"
                  launchPdfPickActivity(intent)
@@ -207,6 +207,8 @@ class MainActivity : AppCompatActivity()
              val fileField: EditText =uploadDialog.findViewById(R.id.fileField)
              val progressBar:ProgressBar=uploadDialog.findViewById(R.id.progressBar)
              val title:TextView=uploadDialog.findViewById(R.id.title)
+             val spinner:ProgressBar=uploadDialog.findViewById(R.id.spinner)
+             spinner.visibility=View.GONE
              uploadDialog.show()
              uploadDialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
              uploadDialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
@@ -229,6 +231,10 @@ class MainActivity : AppCompatActivity()
              button.setOnClickListener {
                  val userUid = UserAuth.currentUser?.uid
                  var totalMemory:Long= 0L
+                 button.isEnabled=false
+                 button.visibility=View.GONE
+                 spinner.visibility=View.VISIBLE
+
                  dbRef.child("User").child(userUid!!).child("Storage").get()
                      .addOnSuccessListener { snap ->
                          totalMemory= snap.child("totalMemory").value.toString().toLong()
@@ -313,7 +319,12 @@ class MainActivity : AppCompatActivity()
              val extension:String?=MimeTypeMap.getSingleton().getExtensionFromMimeType(contentResolver.getType(file!!))
              return "$filename.$extension"
          }
-         private fun uploadToDatabase(filename:String,filetype:String,progressBar: ProgressBar,uploadDialog:Dialog)
+         private fun uploadToDatabase(
+             filename: String,
+             filetype: String,
+             progressBar: ProgressBar,
+             uploadDialog: Dialog
+         )
          {
              try{
                  file.let {
@@ -327,6 +338,7 @@ class MainActivity : AppCompatActivity()
                          //noteToDataBase(UploadFile(filename,cloudRef.child("Images/$filename").downloadUrl.toString()),filetype)
                          }.addOnFailureListener {
                              Toast.makeText(this, "Error on Upload", Toast.LENGTH_SHORT).show()
+                             uploadDialog.hide()
                          }.addOnProgressListener { taskSnapShot ->
                              val progress: Double = (100.0*(taskSnapShot.bytesTransferred))/taskSnapShot.totalByteCount
                              progressBar.progress = progress.toInt()

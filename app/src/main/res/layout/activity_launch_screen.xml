@@ -1,20 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".launch_screen"
-    android:background="@drawable/launch_page_bg">
+    android:background="@drawable/launch_page_bg"
+    tools:context=".launch_screen">
 
     <ImageView
         android:id="@+id/logo"
-        android:layout_width="356dp"
+        android:layout_width="0dp"
         android:layout_height="240dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="208dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginBottom="100dp"
         android:contentDescription="logo"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/logowithslogan" />
@@ -23,31 +25,29 @@
         android:id="@+id/loginButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="233dp"
         android:background="@drawable/button_bg"
+        android:drawableLeft="@drawable/arrowleft"
         android:fontFamily="@font/sarpanch"
         android:paddingRight="20dp"
+        android:layout_marginTop="20dp"
         android:text="Log-In"
         android:textColor="@color/white"
-        android:drawableLeft="@drawable/arrowleft"
         android:textSize="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/logo" />
 
     <android.widget.Button
         android:id="@+id/signUpButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="17dp"
-        android:layout_marginBottom="168dp"
+        android:layout_marginTop="20dp"
         android:background="@drawable/button_bg"
+        android:drawableLeft="@drawable/arrowleft"
         android:fontFamily="@font/sarpanch"
         android:paddingRight="20dp"
         android:text="Sign-up"
-        android:drawableLeft="@drawable/arrowleft"
         android:textColor="@color/white"
         android:textSize="30dp"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/button_login" />
+        app:layout_constraintTop_toBottomOf="@+id/loginButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,8 +1,10 @@
 package com.example.myvault
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
+import android.view.inputmethod.InputMethodManager
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -45,6 +47,7 @@ class signIn : AppCompatActivity() {
                     SignUserIn(mail, pass)
                 }
         }
+
     }
     private fun SignUserIn(email:String,password:String)
     {

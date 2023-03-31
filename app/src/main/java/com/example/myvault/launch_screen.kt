@@ -11,7 +11,6 @@ class launch_screen : AppCompatActivity() {
     private lateinit var UserAuth: FirebaseAuth
     override fun onCreate(savedInstanceState: Bundle?) {
         supportActionBar?.hide()
-
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_launch_screen)
         loginbt=findViewById(R.id.loginButton)
