@@ -1,4 +1,7 @@
 # MyVault
+
+![MyVault](https://raw.githubusercontent.com/AritraBiswas9788/Public-Assets/main/MyVault.png)
+
 ### A project made with ❤️ by 
 * [Aritra Biswas](https://github.com/AritraBiswas9788)
 
